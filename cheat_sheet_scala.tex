@@ -9,7 +9,7 @@
 
 
 \begin{document}
-\title{Заметки по машинному обучению и анализу данных}
+\title{Заметки. Практика использования и наиболее полезные конструкции языка \texttt{Scala}}
 
 \author{\itshape Подвойский А.О.}
 
@@ -18,18 +18,193 @@
 
 \thispagestyle{fancy}
 
-Здесь приводятся заметки по некоторым вопросам, касающимся машинного обучения, анализа данных, программирования на языках \texttt{Python}, \texttt{R} и прочим сопряженным вопросам так или иначе, затрагивающим работу с данными.
+Здесь приводятся заметки по некоторым вопросам, касающимся машинного обучения, анализа данных, программирования на языках \texttt{Scala} и прочим сопряженным вопросам так или иначе, затрагивающим работу с данными.
 
 
 %\shorttableofcontents{Краткое содержание}{1}
 
-
 \tableofcontents
 
+\section{Вызов функций и методов}
+
+Математические функции определены в пакете \texttt{scala.math}. Их можно импортировать инструкцией
+
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+import scala.math._ // импорт всех элементов пакета
+\end{lstlisting}
+
+Здесь символ <<\verb|_|>> -- <<групповой>> символ, аналог <<\verb|*|>> в \texttt{Python}: \lstinline{from math import *}.
+
+\remark{%
+    При использовании пакета, имя которого начинается с префикса \texttt{scala.}, этот префикс можно опустить. Например, инструкция \texttt{import math.\_} эквивалентна инструкции \texttt{import scala.math.\_}, а вызов \texttt{math.sqrt(2)} эквивалентен вызову \texttt{scala.math.sqrt(2)}
+}
+
+\section{Метод apply}
+
+В языке принято использовать синтаксис, напоминающий вызовы функций. Например, если \texttt{s} -- это строка, тогда выражение \texttt{s(i)} вернет $ i $-ый символ строки
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+"Fortran"(4)  // вернет `r` как 4-ый символ строки
+// тоже самое с использованием метода `apply` "Fortran".apply(4)
+\end{lstlisting}
+
+Функции часто передаются методам в очень компактной форме записи. Например, чтобы вернуть количество символов верхнего регистра в строке можно воспользоваться конструкцией
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+// --- Scala ---
+val s: String = "PythonTheBestLanguage"
+s.count(_.isUpper)  // 4
+\end{lstlisting}
+
+На \texttt{Python} эту задачу можно решить так
+\begin{lstlisting}[
+style = ironpython,
+numbers = none
+]
+# --- Python ---
+# с помощью генератных выражений и генераторов списков
+In[]: %timeit -n10 len(list(char for char in s if char.isupper()))
+Out[]: 7.62 milis +/- 383 ns per loop (mean +/- std. dev. of 7 runs, 10 loops each)
+In []: %timeit -n10 len([char for char in s if char.isupper()])
+Out[]: 5.04 milis +/- 406 ns per loop (mean +/- std. dev. of 7 runs, 10 loops each)
+# с помощью теоретико-множественных операций
+In[]: from string import ascii_uppercase
+In []: %timeit -n10 len(set(s).intersection(set(ascii_uppercase)))
+Out[]: 7.5 milis +/- 812 ns per loop (mean +/- std. dev. of 7 runs, 10 loops each)
+\end{lstlisting}
+
+\section{Управляющие структуры и функции}
+
+В \texttt{Java} или \texttt{C++} мы различаем \emph{выражения}, такие как \texttt{3 + 4}, и \emph{инструкции}, например \texttt{if}. Выражение имеет значение; инструкция выполняет действие. В \texttt{Scala} практически все конструкции имеют значения, то есть являются \emph{выражениями}. Это позволяет писать более короткие и более удобочитаемые программы.
+
+\subsection{Условные выражения}
+
+В \texttt{Scala} \verb|if/else| возвращает значение, а именно значение выражения, следующего за \texttt{if} или \texttt{else}. Например,
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val x: Int = 10
+val n = if (x > 0) 1 else -1  // тернарное выражение
+\end{lstlisting}
+
+В \texttt{Python} это выглядело бы так
+\begin{lstlisting}[
+style = ironpython,
+numbers = none
+]
+x = 10
+n = 1 if (x > 0) else -1
+\end{lstlisting}
+
+В Scala \emph{каждое выражение имеет тип}. Например, выражение \verb|if (x > 0) 1 else -1| имеет тип \texttt{Int}, потому что обе ветви имеют тип \texttt{Int}. Типом выражения, способного возвращать значения разных типов, такого как \texttt{if (x > 0) "positive" else -1}, является супертип для обеих ветвей. В данном примере одна ветвь имеет тип \texttt{java.lang.String}, а другая -- тип \texttt{Int}. Их общий супертип называется \texttt{AnyVal}.
+
+Может получиться так, что инструкция \texttt{if} не будет иметь значения. Например, в случае, когда \texttt{if (x > 0) 1}, а \texttt{x} отрицательный. Однако в Scala каждое выражение предполагает наличие какого-либо значения. Эта проблема была решена введением класса \texttt{Unit}, единственное значение которого записывается как \verb|()|\footnote{Эту комбинацию можно воспринимать как пустое значение и считать тип \texttt{Unit} аналогом типа \texttt{void} в Java или C++. Но, строго говоря, \texttt{void} означает отсутствие значения, тогда как \texttt{Unit} имеет единственное значение, означающее <<нет значения>> }. Инструкция \texttt{if} без ветви \texttt{else} эквивалентна инструкции
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+if (x > 0) 1 else ()
+\end{lstlisting}
+
+Многострочное выражение в интерактивной оболочке можно заключить в фигурные скобки
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+{
+  if (x > 0) 1
+  else
+    if (x == 0) 0
+    else -1
+}
+\end{lstlisting}
+
+Если потребуется перенести длинную строку на другую строку, первая строка должна оканчиваться символом, который не может интерпретироваться как конец инструкции. Для этого подойдет любой оператор
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+s = s0 + (v - v0)*t + // оператор + сообщает парсеру, что это не конец
+0.5*(a - a0)*t*t
+\end{lstlisting}
+
+На практике длинные строки можно обрамлять фигурными скобками
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+if (n > 0) {  // открывающая скобка в конце строки явно свидетельствует,
+              // что инструкция будет продолжена на следующих строках
+  r = r*n
+  n -= 1
+}
+\end{lstlisting}
+
+В языке Scala блок \verb|{}| содержит последовательность \emph{выражений} и сам считается выражением, результатом которого является результат \underline{последнего} выражения.
+
+Это может пригодиться для инициализации значений \texttt{val}, когда требуется выполнить более одного действия. Например
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+import scala.math
+val x: Int = 10
+val x0: Int = 1
+val y: Int = 24
+val y0:Int = 50
+val distance = { val dx = x - x0; val dy = y - y0; scala.math.sqrt(dx*dx + dy*dy) }
+// вернет 27.51363298439521
+\end{lstlisting}
+
+Поскольку инструкции присвоения возвращают значение \texttt{Unit}, их нельзя объединять в цепочки
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+// -- Scala
+x = y = 1 // Неправильно!
+\end{lstlisting}
+
+В Python можно
+\begin{lstlisting}[
+style = ironpython,
+numbers = none
+]
+# здесь просто x и y ссылаются на один и тот же объект целочисленного типа данных со значением 1
+x = y = 1
+\end{lstlisting}
+
+\section{Ввод и вывод}
+
+Чтобы вывести значение, используйте функцию \texttt{print} или \texttt{println}. Последняя добавляет символ перевода строки в конце. Имеется также функция \texttt{printf}, принимающая строку описания формата в стиле языка С
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+printf("CAE-package %s has %d cores", "Nastran", 32)
+\end{lstlisting}
+
+Прочитать строку, введенную в консоли с клавиатуры, можно с помощью функции \texttt{readLine}. Чтобы прочитать число, логическое или символьное значение, используйте \texttt{readInt}, \texttt{readDouble}, \texttt{readByte}, \texttt{readShort}, \texttt{readLong}, \texttt{readFloat}, \texttt{readBoolean} или \texttt{readChar}.
+
+Метод \texttt{readLine}, в отличие от других, принимает строку приглашения к вводу
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val name = readLine("Your name: ")
+\end{lstlisting}
 
 
 
-\listoffigures\addcontentsline{toc}{section}{Список иллюстраций}
+%\listoffigures\addcontentsline{toc}{section}{Список иллюстраций}
 
 % Источники в "Газовой промышленности" нумеруются по мере упоминания 
 \begin{thebibliography}{99}\addcontentsline{toc}{section}{Список литературы}

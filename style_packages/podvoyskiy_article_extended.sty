@@ -201,7 +201,8 @@
 	Python,
 	Fortran,
 	command.com,
-	[LaTeX]TeX
+	[LaTeX]TeX,
+	Scala
 }  % поддерживаемые языки
 
 % локальные настройки подсветки синтаксиса IronPython Workbench
@@ -263,6 +264,14 @@
 %   showstringspaces=false,
 %   showtabs=false,
 }
+
+\lstdefinestyle{scala}{
+	language=Scala,
+	basicstyle = \fontsize{10pt}{10pt}\ttfamily,  % стиль отображения базовых элементов кода
+	stringstyle=\itshape\color{deepgreen},
+	commentstyle=\color{deepred}\itshape
+}
+
 
 % глобальные настройки подсветки синтаксиса
 \lstset{%
