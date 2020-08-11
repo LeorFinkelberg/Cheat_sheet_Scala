@@ -199,8 +199,205 @@ printf("CAE-package %s has %d cores", "Nastran", 32)
 style = scala,
 numbers = none
 ]
-val name = readLine("Your name: ")
+import scala.io.StdIn.readLine
+import scala.io.StdIn.readInt
+val name = readLine("Your name: ") // ввод имени
+print("Your age: ")
+val age = readInt()  // ввод возраста
+printf("Hello, %s! Next year, you will be %d.", name, age+1)
+// Hello, Leor! Next year, you will be 33.
 \end{lstlisting}
+
+\section{Циклы}
+
+В Scala отсутствует прямой аналог цикла \texttt{for (инициализация;проверка;обновление)}. Если такой цикл потребуется, у вас есть два варианта на выбор -- использовать цикл \texttt{while} или инструкцию \texttt{for}, как показано ниже
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val n:Int = 10 // константа
+var r: Int = 1 // переменная со значением по умолчанию
+for (i <- 1 to n)
+    r = r*i
+printf("Result: %d", r) // Result: 3628800
+\end{lstlisting}
+
+В Python эта задача решалась бы так
+\begin{lstlisting}[
+style = ironpython,
+numbers = none
+]
+n = 10
+r = 1
+for i in range(1,n+1):
+    r *= i
+print(f'Result: {r}')  # Result: 3628800
+\end{lstlisting}
+
+Вызов \texttt{1 to n} вернет объект \texttt{Range}, представляющий числа в диапазоне от 1 до \texttt{n} (включительно).
+
+Конструкция
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+for (i <- expr)
+\end{lstlisting}
+обеспечивает последовательное присваивание переменной \texttt{i} всех значений выражения \texttt{expr} справа от \texttt{<-}. Порядок присвоения зависит от типа выражения. Для коллекций, таких как \texttt{Range}, присвоит переменной \texttt{i} каждое значение по очереди.
+
+Перед именем переменной в цикле \texttt{for} не требуется указывать \texttt{val} или \texttt{var}. Тип переменной соотвествует типу элементов коллекции. Область видимости переменной цикла ограничивается телом цикла.
+
+Для обхода элементов строки или массива зачастую нужно определить диапазон от 0 до $ n - 1 $. В этом случае используйте метод \texttt{until} вместо \texttt{to}. Он возвращает диапазон, не включающий верхнюю границу. Например
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val s: String = "Hello"
+var sum: Int = 0
+for (i <- 0 until s.length)
+  sum += s(i)
+\end{lstlisting}
+
+В действительности в данном примере нет необходимости использовать индексы. Цикл можно выполнить непосредственно по символам
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+var sum: Int = 0
+for (ch <- "Hello")
+  sum += ch
+\end{lstlisting}
+
+Как и в Python. В Python тоже можно перебирать элементы последовательности прямо в цикле без индексов. В Scala циклы используются те так часто, как в других языках. Значения в последовательностях зачастую можно обрабатывать, применяя функцию сразу ко всем элементам, для чего достаточно произвести единственный вызов метода.
+
+В Scala нет инструкций \texttt{break} или \texttt{continue} для преждевременного завершения цикла. Но как же быть, если это потребуется? Есть несколько вариантов:
+\begin{enumerate}
+	\item Использовать логическую переменную управления циклом,
+	
+	\item Используйте вложенные функции -- при необходимости можно выполнить инструкцию \texttt{return} в середине функции,
+	
+	\item Используйте метод \texttt{break} объекта \texttt{Breaks}
+	\begin{lstlisting}[
+	style = scala,
+	numbers = none
+	]
+	// здесь передача управления за пределы цикла выполняется путем возбуждения и перехвата исключения, поэтому избегайте пользоваться этим механизмом, когда скорость выполнения критична
+	import scala.util.control.Breaks._
+	breakable {
+	  for (...) {
+	    if (...) break; // выход из прерываемого блока
+	      ...
+	  }
+	}
+	\end{lstlisting}
+\end{enumerate}
+
+\subsection{Расширенные циклы for и for-генераторы}
+
+В предыдущем разделе была представлена базовая форма цикла \texttt{for}. Однако эта конструкция намного богаче, чем в Java или C++. В заголовке цикла \texttt{for} допускается указывать несколько \emph{генераторов} в форме \textit{переменная <- выражение}, разделяя их <<;>>
+
+\begin{minipage}[t]{0.45\textwidth}
+	\begin{lstlisting}[
+	style = scala,
+	numbers = none	
+	]
+// --- Scala
+// несколько генераторов
+for (i <- 1 to 3; j <- 1 to 5)
+  print(f"${10*i + j} ")
+	\end{lstlisting}
+\end{minipage}
+\hspace*{2mm}
+\begin{minipage}[t]{0.45\textwidth}
+	\begin{lstlisting}[
+	style = ironpython,
+	numbers = none	
+	]
+# --- Python
+# вложенные циклы
+for i in range(1, 3+1):
+    for j in range(1, 5+1):
+        print(f'{10*i+j} ')
+	\end{lstlisting}
+\end{minipage}
+
+Что касается форматирования, то можно использовать конструкции с f-строками. Пример
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+import scala.io.StdIn.readLine
+import scala.io.StdIn.readInt
+
+val package_name = readLine("Enter package's name: ")
+print("Enter number of cores: ")
+val n_cores = readInt()
+print(f"CAE-package: ${package_name}, number of cores: ${n_cores}") // f-строка
+\end{lstlisting}
+
+Управлять форматом вывода чисел можно так
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val n: Double = 0.345345345345
+print(f"This is a number: ${n}%.3f") // This is a number: 0,345
+\end{lstlisting}
+
+Каждый генератор может иметь \emph{ограничитель} -- логическое условие с предшествующим ему ключевым словом \texttt{if}
+
+\begin{minipage}[t]{0.48\textwidth}
+	\begin{lstlisting}[
+	style = scala,
+	numbers = none
+	]
+// --- Scala
+for (i <- 1 to 3; j <- 1 to 3 if i != j)
+  print(f"${10*i + j} ")
+	\end{lstlisting}
+\end{minipage}
+\hspace*{4mm}
+\begin{minipage}[t]{0.45\textwidth}
+	\begin{lstlisting}[
+	style = ironpython,
+	numbers = none
+	]
+# --- Python
+for i in range(1,3+1):
+    for j in range(1,3+1):
+        if i != j:
+            print(f'{10*i + j} ', end=' ')
+	\end{lstlisting}
+\end{minipage}
+
+Допускается любое количество \emph{определений}, вводящих переменные для использования внутри цикла
+
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+// --- Scala
+for (i <- 1 to 3; from = 4 - i; j <- from to 3)
+  print(f"${10*i + j} ")
+  // 13 22 23 31 32 33
+\end{lstlisting}
+
+На Python эта задача могла бы быть решена так
+\begin{lstlisting}[
+style = ironpython,
+numbers = none
+]
+for i in range(1,3+1):
+    frm = 4 - i
+	for j in range(frm,3+1):
+	    print(f'{10*i + j} ')
+# 13 22 23 31 32 33
+\end{lstlisting}
+
+
+
+
+
 
 
 
@@ -208,7 +405,7 @@ val name = readLine("Your name: ")
 
 % Источники в "Газовой промышленности" нумеруются по мере упоминания 
 \begin{thebibliography}{99}\addcontentsline{toc}{section}{Список литературы}
-	\bibitem{lutz:learningpython-2011}{{\emph{Лутц М.} Изучаем Python, 4-е издание. -- Пер. с англ. -- СПб.: Символ-Плюс, 2011. -- 1280~с. }
+	\bibitem{hostmann:scala-2013}{{\emph{Хостаманн К.} Scala для нетерпеливых. -- М.: ДМК Пресс, 2013. -- 408~с. }
 \end{thebibliography}
 
 \end{document}
