@@ -25,6 +25,600 @@
 
 \tableofcontents
 
+\section{Установка SDK}
+
+SDKMAN (Software Development Kit Manager) \url{https://sdkman.io/} -- Очень полезная утилита для работы scala-средой.
+
+\begin{lstlisting}[
+style = bash,
+numbers = none	
+]
+curl -s "https://get.sdkman.io" | bash
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+sdk version
+\end{lstlisting}
+
+\section{Краткая справка по особенностям языка}
+
+\subsection{Часто используемые типы}
+
+Все типы в Scala являются классами, поэтому нет никакой разницы между простым типом и классом. Можно вызывать метод непосредственно у числа, например
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+var float_var = 1.toFloat
+\end{lstlisting}
+
+Грубо можно выделить 10 простых классов:
+\begin{itemize}
+	\item \texttt{Byte}: целое число от -128 до 127,
+	
+	\item \texttt{Short}: целое число от -32768 до 32767,
+	
+	\item \texttt{Int}: целое число от -2147483648 до 2147483647,
+	
+	\item \texttt{Long}: целое число от -9223372036854775808 до 9223372036854775807,
+	
+	\item \texttt{Float}: десятичное число от -3.4028235-e38 до 3.4028235+e38,
+	
+	\item \texttt{Double}: десятичное число от -1.7976931348623157+e308 до 1.7976931348623157+e308,
+	
+	\item \texttt{Char}: символ; литералами являются одинарные кавычки,
+	
+	\item \texttt{String}: строка; простейшими литералами являются двойные кавычки. Использование:
+	\begin{itemize}
+		\item \texttt{"}: можно использовать специальные символы переноса строки и прочих,
+		
+		\item \verb|"""|: многострочная строка,
+		
+		\item \texttt{s"} или \verb|s"""|: строка, в которой можно подставлять переменные через \verb|$varName|, или выражения \verb|${1 + $varName}|, например,
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+import scala.io.StdIn.readLine
+import scala.io.StdIn.readInt
+
+val name = readLine("Your name: ")
+print("Enter your age: ")
+val age = readInt()
+val result = if (age < 18) "child" else "adult"
+print(s"Hello, $name! You are $result.") // Hello, Leor! You are adult.
+\end{lstlisting}
+		
+		\item \texttt{f"} или \verb|f"""|: строка, в которую можно подставлять переменные через \verb|$varName%format|, или через \verb|${varName}%format|, например,
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+print(f"Hello, ${name}! You are ${result}.") // Hello, Leor! You are adult.
+print(f"${age/scala.math.cos(4) + 1}%.3e") // -4,049e+01
+\end{lstlisting}
+
+    \item \verb|raw"| или \verb|raw"""|: сырая строк, которая не интерпретирует специальные символы.
+	\end{itemize}
+    \item Так же можно реализовать свои специальные литералы через implicit-классы.
+\end{itemize}
+
+\subsection{Методы}
+
+Scala позволяет использовать в качестве имен любые символы, поэтому <<\texttt{+}>> это имя метода. Основные правила вызова функций и методов:
+\begin{itemize}
+	\item Если аргумент один, то \verb|()| можно заменить на \verb|{}|,
+	
+	\item Если аргумент один и используется точечная нотация, то \verb|()| не использовать,
+	
+	\item Если функция не принимает аргументов, то \verb|()| можно не использовать. Общее правило здесь такое: если метод изменяет объект, то скобки нужны, иначе нет особенной необходимости,
+	
+	\item Если имя метода заканчивается на <<\texttt{:}>>, то метод правоассоциативен, то есть параметр будет слева.
+\end{itemize}
+
+В Scala нет операторов \verb|++| и \verb|--|, вместо них используются \verb|+=1| и \verb|-=1|.
+
+\subsection{Управляющие конструкции и функции}
+
+Все управляющие конструкции в Scala возвращают значение, как следствие, имеют тип и могут быть присвоены переменной. Например
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val x: Int = 1; val y: Int = 2
+val z = if (x > 1) "Yes" else if (y > 2) "Oh, yea!" else "No" // z: String = No
+\end{lstlisting}
+
+В иерархии типов Scala общим родительским является тип Any, общим дочерним Nothing, а за тип void отвечает Unit, который имеет значение \texttt{()}.
+
+\subsection{Циклы}
+
+Самое первое, что необходимо узнать о циклах в Scala, здесь нет инструкций \texttt{break} и \texttt{continue}. В Scala есть стандартные циклы \texttt{while} и \texttt{do/while}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+while (true) {
+  // doSomething
+}
+
+do {
+  // Something
+} while (true)
+\end{lstlisting}
+
+Есть цикл \texttt{for}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+for (i <- 1 to 5) print(i) // 12345
+for (i <- 1 until 5) print(i) // 1234
+\end{lstlisting}
+
+Допускается использовать несколько генераторов, определений и ограничителей, разделенных между собой точкой с запятой или определенных с новой строки. При этом генераторы будут выполняться как вложенные циклы слева-направо
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+for (i <- 1 to 3; j <- 1 to 5) print(s"$i-$j\t")
+\end{lstlisting}
+
+В определениях переменные являются var. Ограничители выглядят как \texttt{if booleanExpression}, итерация запуститься только в случае выполнения условий. Каждый ограничитель следует за генератором, которому он принадлежит, и не должен содержать переменные, находящиеся в объявлении цикла после него
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+for (i <- 1 to 3 if i % 2 == 0; j <- 1 to 5 if i != j) print(s"$i-$j")
+\end{lstlisting}
+
+Если тело цикла начинается с ключевого слова \texttt{yield}, то цикл вернет \emph{коллекцию}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+for (i <- 1 to 3; j <- 1 to 3) yield i + j
+//val res IndexedSeq[Int] = Vector(11, 12, 13, 12, ..., 17, 18)
+\end{lstlisting}
+
+\subsection{Функции}
+
+Функция определяется с помощью ключевого слова \texttt{def}. Тип возвращаемого объекта обязательно указывать только в случае процедур (функций, которые ничего не возвращают) и рекурсивных функций, однако нет ничего плохого в том, чтобы всегда указывать тип возвращаемого объекта
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+// это процедура, поэтому тип Unit обязательно указывать!
+def foo(s: String, status: Float = 0.835.toFloat): Unit = {
+  print(f"--- ${s} [${status}%.3e] ---")
+}
+
+// это обычная функция, возвращающая объект целочисленного типа данных
+def prod(a: Int, b: Int = 10): Int = {
+  // нет необходимости использовать return!!!
+  a*b
+}
+
+// это рекурсивная функция
+def fact(n: Int): Int = {
+  if (n <= 0) 1 else {
+    n*fact(n-1)
+  }
+}
+
+// функция, принимающая переменное число аргументов
+def varargs(args: Int*): Unit = {
+  print(args.length)
+}
+varargs(1, 4, 10, 2) // 4
+varargs(1 to 5: _*)  // 5
+\end{lstlisting}
+
+\subsection{Каррирование}
+
+Функцию нескольких аргументов можно превратить в каррированный вариант
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+val plus3 = (x: Int, y: Int, z: Int) => {
+    x + y + z  // здесь не нужно использовать return 
+}
+val plus3c = plus3.curried // вызван метод curried
+plus3c(10)(20)(30)  // 60
+\end{lstlisting}
+
+На Python эта задача была бы решена так
+\begin{lstlisting}[
+style = ironpython,
+emph = {plus3, layer1, layer2},
+numbers = none	
+]
+def plus3(x: int) -> int:
+    def layer1(y: int) -> int:
+        def layer2(z: int) -> int:
+            return x + y + z
+        return layer2
+    return layer1
+plus3(10)(20)(30)  # 60
+\end{lstlisting}
+
+\subsection{Композиция}
+
+Цепочки можно вычислять с помощью методов \texttt{andThen} и \texttt{compose}
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+val plus1 = (x: Int) => x + 1
+val mul3 = (x: Int) => x*3
+
+val plusThenMul = plus1 andThen mul3
+plusThenMul(5)  // mul3(plus1(5))
+
+val plusBeforeMul = plus1 compose mul3
+plusBeforeMul(5) // plus1(mul3(5))
+\end{lstlisting}
+
+\subsection{Массивы}
+
+Массивы бывают \emph{фиксированной} и \emph{переменной} длинны, они типизированы типом, которых их наполняет (тип указывается в квадратных скобках). Массивом фиксированной длины является тип \texttt{Array}. Для инициализации пустого массива определенной длины используется конструкция \lstinline{new Array[T](length: Int)}, а для инициализации наполненного массива -- конструкция \lstinline{Array(value1, value2, ..., valueN)}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+// при создании пустого массива необходимо указывать new, в противном случае будет создан
+// массив, состоящий из указанного объекта 
+val arr = new Array[Float](3)  // val res50: Array[Float] = Array(0.0, 0.0, 0.0)
+Array(1.0, 2.5, 3.75, 4)  // val res51: Array[Double] = Array(1.0, 2.5, 3.75, 4.0)
+\end{lstlisting}
+
+Для доступа к элементам массива используются круглые скобки
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val a = new Array[Int](5)  // Array[Int] = Array(0, 0, 0, 0, 0)
+a(2) = 10 // Array[Int] = Array(0, 0, 10, 0, 0)
+val aOf2 = a(2) // aOf2: Int = 10
+\end{lstlisting}
+
+Массивом переменной длины является тип ArrayBuffer из пакета \texttt{scala.collection.mutable}. Для создания пустого массива можно воспользоваться \texttt{ArrayBuffer[T]()} с \texttt{new} или без. Основные методы массивов:
+\begin{itemize}
+	\item \texttt{+=(n: T)} -- добавить элемент в конец,
+	
+	\item \texttt{++=} -- добавить другую коллекцию в конец,
+	
+	\item \texttt{trimEnd(n: Int)} -- удалить n-элементов с конца,
+	
+	\item \texttt{insert(position: Int, values: T*)} -- вставить на позицию position значения values,
+	
+	\item \texttt{remove(position: Int, length: Int = 1)} -- удалить с позиции position значения.
+\end{itemize}
+
+Пример
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+import scala.collection.mutable.ArrayBuffer
+// массив переменной длины
+val arr = new ArrayBuffer[Int]()
+arr += 10 // arr.type = ArrayBuffer(10)
+arr += 20 // arr.type = ArrayBuffer(10, 20)
+// массив фиксированной длины
+val arrint = new Array[Int](2) // arrint: Array[Int] = Array(0, 0)
+arrint(0) = 100
+arrint(1) = 200
+arr ++= arrint // arr.type = ArrayBuffer(10, 20, 100, 200)
+arr += (1000: Int) // arr.type = ArrayBuffer(10, 20, 100, 200, 1000)
+\end{lstlisting}
+
+Заполнить массив фиксированной длины в цикле
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val arr = new Array[Float](3)
+for (i <- 0 until arr.length) arr(i) = 10.toFloat*(i + 1)
+\end{lstlisting}
+
+Для преобразования массива одного типа в другой используются методы \texttt{toArray/toBuffer}. Обойти массивы можно несколькими способами
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val arr: Array[Int] = Array(4, 0, 10) // или просто val arr = Array(4, 0, 10)
+for (i <- 0 until arr.length) println(i, arr(i))
+// (0,4)
+// (1,0)
+// (2,10)
+
+for (elem <- arr) println(elem)
+//  4
+//  0
+// 10
+// то же самое
+arr.foreach(println(_))
+\end{lstlisting}
+
+Можно использовать \texttt{yield} для создания новых коллекций
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+import math._
+
+val arr = Array(1 to 5: _*) // val arr: Array[Int] = Array(1, 2, 3, 4, 5)
+val res = for (elem <- arr) yield pow(elem, 2) + 10 // val res4: Array[Double] = Array(11.0, 14.0, 19.0, 26.0, 35.0)
+\end{lstlisting}
+
+В Python это выглядело было так
+\begin{lstlisting}[
+style = ironpython,
+numbers = none
+]
+import numpy as np
+
+arr = np.array(range(1,5+1))
+res = arr**2. + 10
+\end{lstlisting}
+
+Есть несколько типичных методов
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val arr = Array(3.23, 5.3, 4.2) // val arr: Array[Double] = Array(3.23, 5.3, 4.2)
+arr.mkString(";")
+val res27: String = 3.23;5.3;4.2
+\end{lstlisting}
+
+Матрицу можно создать так
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val m = Array.ofDim[Int](2,2)
+\end{lstlisting}
+
+\subsection{Ассоциативные массивы}
+
+Ассоциативные массивы в Scala представлены классами \texttt{Map[KeyType, ValueType]} для неизменяемых массивов, и \texttt{scala.collection.mutable.Map[KeyType, ValueType]} для изменяемых. Ассоциативные массивы представляют собой коллекцию пар. Пару можно создать через \texttt{(Value1, Value2)} или \texttt{Value1 -> Value2}.
+
+Неизменяемые массивы можно создать только одним способом, через вызов \texttt{apply} объекта-компаньона
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+// неизменяемый ассоциативный массив
+val m = Map[Int, Int](1 -> 2, 3 -> 4)
+// val m: scala.collection.immutable.Map[Int,Int] = Map(1 -> 2, 3 -> 4)
+\end{lstlisting}
+
+По-аналогии можно создать наполненный изменяемый массив
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+// изменяемый ассоциативный массив
+val mutable_arr = scala.collection.mutable.Map[String,String](
+  "package name" -> "Ansys",
+  "solver type" -> "iterative"
+)
+// обращение по ключу
+mutable_arr("package name") // val res2: String = Ansys
+mutable_arr("solver type") // val res3: String = iterative
+\end{lstlisting}
+
+А вот чтобы создать пустой изменяемый ассоциативный массив необходимо воспользоваться классом \texttt{scala.collection.mutable.HashMap}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val hash_arr = scala.collection.mutable.HashMap[String,String]()
+// или так
+import scala.collection.mutable.HashMap
+val hash_arr = HashMap[String,String]()  // пустой изменяемый массив
+hash_arr("package name") = "Ansys" // создать пару
+hash_arr("solver type") = "direct" // еще одну
+hash_arr("package name") // val res7: String = Ansys
+\end{lstlisting}
+
+Проверить существование ключа можно с помощью метода \texttt{contains(key: T)}. И чтобы избавится от постоянных проверок на существование был добавлен метод \texttt{getOrElse(key: T1, defaultValue: T2)}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val m = Map[String,Int]("key1" -> 10, "key2" -> 20) // неизменяемый массив
+m.contains("key1") // val res31: Boolean = true
+m.getOrElse("key1", false) // val res33: AnyVal = 10 (ключ есть)
+m.getOrElse("key10", false) // val res36: AnyVal = false, потому что такого ключа нет
+\end{lstlisting}
+
+Метод \texttt{getOrElse} в Scala похож на метод словарей \texttt{get} в Python. Они оба возвращают значение по ключу (если ключ есть в ассоциативном массиве) или значение по умолчанию (если ключ отсутствует)
+\begin{lstlisting}[
+style = ironpython,
+numbers = none
+]
+# Python
+d = dict([
+    ('key1', 10),
+    ('key2', 20)
+])
+d.get('key1', False) # 10
+d.get('key10', False) # False
+\end{lstlisting}
+
+У ассоциативных массивов есть метод \texttt{get(key: T)}, который возвращает объект типа \texttt{Option}, который представлен типами \texttt{Some(Type)} и \texttt{None}. Так, если ключ не будет найден, то метод \texttt{get} вернет \texttt{None}, иначе \texttt{Some(value)}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val m = Map[String,String](
+  "package name" -> "Ansys",
+  "solver type" -> "iterative"
+)
+m.get("package name") // val res8: Option[String] = Some(iterative)
+m.get("language") // val res9: Option[String] = None
+\end{lstlisting}
+
+Изменять значения можно только в изменяемых ассоциативных массивах
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val m = scala.collection.mutable.Map[Char,Int](
+  'a' -> 10, 'b' -> 20
+) // scala.collection.mutable.Map[Char,Int] = HashMap(a -> 10, b -> 20)
+m('a') // val res11: Int = 10
+m += ('c' -> 31)  // добавить пару
+\end{lstlisting}
+
+Несколько методов для изменяемых массивов:
+\begin{itemize}
+	\item \texttt{+=}: добавить одну или несколько пар к массиву,
+	
+	\item \texttt{-=}: удалить пару из массива.
+\end{itemize}
+
+Чтобы обойти ассоциативные массивы необходимо использовать цикл \texttt{for}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val m = scala.collection.mutable.HashMap[String,String]()
+m += ("package name" -> "Nastran")
+m += ("solver type" -> "iterative")
+for ((k, v) <- m) println(f"${k} : ${v}")
+// package name : Nastran
+// solver type : iterative
+\end{lstlisting}
+
+По умолчанию внутреняя реализация массива представляет собой хеш-таблицу. Чтобы создать отсортированный массив необходимо создать его на основе сбалансированного дерева с помощью класса \texttt{SortedMap}.
+
+\subsection{Кортежи}
+
+Пара -- это простейший случай кортежа. Кортеж (Tuple) создается с помощью круглых скобок, а его типом будет \texttt{TupleN[Type1, Type2 ... TypeN]}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+Tuple3(1, 'e', true) // val res10: (Int, Char, Boolean) = (1,e,true)
+def foo(a: Tuple4[Int, Int, Char, Boolean]): Unit = { println("Yes") }
+foo(Tuple4(1, 10, 'r', true)) // Yes
+foo((2, 15, 'w', false)) // Yes
+\end{lstlisting}
+
+Обратиться к элементам кортежа можно с помощью методов \verb|_n|, где \verb|n| -- номер элемента в кортеже \underline{\itshape начиная с 1}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val t = (1, true, 'F', "Fortran") // val t: (Int, Boolean, Char, String) = (1,true,F,Fortran)
+t._4 // val res20: String = Fortran
+\end{lstlisting}
+
+Также удобно использовать сопоставление с образцом
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val (id, isMan, class, name) = t
+// val id: Int = 1
+// val isMan: Boolean = true
+// val mark: Char = F
+// val name: String = Fortran
+\end{lstlisting}
+
+В Python можно не использовать скобки при распаковке
+\begin{lstlisting}[
+style = ironpython,
+numbers = none
+]
+t = (1, True, 'F', 'Fortran')
+(x, y, z, d) = t # можно просто x, y, z, d = t
+for var in list('xyzd'):
+    obj = eval(var)
+    print(type(obj), obj)
+# <class 'int'> 1
+# <class 'bool'> True
+# <class 'str'> F
+# <class 'str'> Fortran
+\end{lstlisting}
+
+У индексного массива есть метод \texttt{zip(another: Array[T])}, который возвращает массив пар
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val a = Array(1 to 6: _*)
+val b = = Array("python": _*)
+a.zip(b) // val res33: Array[(Int, Char)] = Array((1,p), (2,y), (3,t), (4,h), (5,o), (6,n))
+\end{lstlisting}
+
+\section{Классы}
+
+Классы в Scala объявляются подобно классам в других языках, с помощью ключевого слова \texttt{class}. Свойства и методы объявляются внутри класса также как и переменные функции
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+class Person {
+  val age = 10
+  def say(phrase: String): Unit = {
+    print(phrase)
+  }
+  
+  def sayHi(): Unit = {
+    this.say("Hi\n")
+  }
+}
+val john = new Person()
+// даже если метод не принимает аргументов, его следует вызывать с пустыми скобками, т.е. как sayHi()
+john.sayHi() // Hi
+\end{lstlisting}
+
+Для создания экземпляра класса используется ключевое слово \texttt{new}. По умолчанию все свойства и методы являются \emph{публичными}, а ключевого слова \texttt{public} нет в принципе. Все поля должны быть инициализированы. Обратиться к свойству или методу можно через точку, а к своим методам изнутри как с использованием \texttt{this}, так и напрямую как к функции или переменной.
+
+Если хочется вызывать метод, который не принимает аргументов, без явного указания пустых скобок, то их не следует указывать при определении метода внутри класса
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+...
+  def sayHi: Unit = { // нет скобок у метода
+    this.say("Hi\n")
+  }
+\end{lstlisting}
+
+\subsection{Методы доступа}
+
+Свойства и методы можно сделать недоступными из вне. Для этого их необходимо сделать приватными с помощью ключевого слова \texttt{private} или защищенными (доступными в наследниках класса) \texttt{protected}. При этом можно оставить доступ через методы доступа. При объявлении свойств публичными Scala неявно создает два метода \texttt{valName} -- getter и \texttt{valName\_=(value: Type)} -- setter. В этом можно убедиться, если скомпилировать класс через scalac и посмотреть байт код через \texttt{javap -private}.
+
+Когда поле объявляется как \texttt{private}, то поле будет доступно только внутри класса. Именно класса, то есть экземпляры одного класса будут иметь доступ к приватным методам и свойствам друг друга. Чтобы ограничить видимость \emph{внутри экземпляра}, следует объявить метод или свойство как \texttt{private[this]}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+class Person {
+  private[this] var name: String = "John"
+  private val age = scala.util.Random.nextGaussian()
+  
+  def name_=(value: String) = name = value
+  def age_?(person: Person) = person.age
+}
+\end{lstlisting}
+
+\subsection{Конструкторы}
+
+
+
+
+
+
+
+
+
+
 \section{Вызов функций и методов}
 
 Математические функции определены в пакете \texttt{scala.math}. Их можно импортировать инструкцией
@@ -144,7 +738,7 @@ numbers = none
 if (n > 0) {  // открывающая скобка в конце строки явно свидетельствует,
               // что инструкция будет продолжена на следующих строках
   r = r*n
-  n -= 1
+  n -=1 // `-=1` следует писать слитно
 }
 \end{lstlisting}
 
@@ -335,6 +929,8 @@ val n_cores = readInt()
 print(f"CAE-package: ${package_name}, number of cores: ${n_cores}") // f-строка
 \end{lstlisting}
 
+То есть, чтобы подставить в основную строку другую строку или какой-либо другой объект, используется конструкция \verb|${}|.
+
 Управлять форматом вывода чисел можно так
 \begin{lstlisting}[
 style = scala,
@@ -394,8 +990,400 @@ for i in range(1,3+1):
 # 13 22 23 31 32 33
 \end{lstlisting}
 
+Когда тело цикла начинается с инструкции \texttt{yield}, цикл будет конструировать коллекцию, добавляя в нее по одному элементу в каждой итерации
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+for (i <- 1 to 10)
+  yield i % 3
+// IndexedSeq[Int] = Vector(1, 2, 0, 1, 2, 0, 1, 2, 0, 1)
+\end{lstlisting}
 
+Такого рода циклы называют \texttt{for}-генераторами (for-comprehension)
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+// в Scala оператор yield может существовать вне контекста функции
+// в Python yield имеет смысл только в контексте функции
+for (c <- "Hello"; i <- 0 to 1)
+  yield (c + i).toChar
+// IndexedSeq[Char] = Vector(H, e, l, l, o, I, f, m, m, p)
+\end{lstlisting}
 
+При желании генераторы, ограничители и определения цикла \texttt{for} можно заключить в фигурные скобки и вместо точек с запятой использовать переводы строки
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+for { i <- 1 to 3
+      from <- 4 - i
+      j <- from to 3 }
+  print(f"${10*i + j} ")
+\end{lstlisting}
+
+\section{Функции}
+
+В дополнение к методам в Scala имеются функции. Метод оперирует объектом, а функции -- нет. Чтобы определить функцию, нужно указать имя функции, параметры и тело, как показано ниже
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+def abs(x: Double) = if (x >= 0) x else -x
+// или
+// def abs(x: Double) = {if (x >= 0) x else -x}
+\end{lstlisting}
+
+Требуется определить типы всех параметров. Однако, если функция не рекурсивная, определять тип возвращаемого значения не требуется. Компилятор Scala определяет тип возвращаемого значения по типу выражения справа от символа \texttt{=}.
+
+В Python эту задачу можно было бы решить так
+\begin{lstlisting}[
+style = ironpython,
+emph = {_abs},
+numbers = none
+]
+def _abs(x: float) -> float:
+    return x if (x >= 0) else -x
+\end{lstlisting}
+или с помощью анонимных функций
+\begin{lstlisting}[
+style = ironpython,
+numbers = none
+]
+_abs = lambda x: x if (x >= 0) else -x
+_abs(10) # 10
+_abs(-20) # 20
+\end{lstlisting}
+
+Если тело функции содержит более одного выражения, используйте блок. \emph{Последнее} выражение в блоке определяет значение, возвращаемое функцией. Например, следующая функция вернет значение \texttt{r} после цикла \texttt{for}
+
+\begin{minipage}[t]{0.45\textwidth}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+// --- Scala
+def fact(n: Int) = {
+  var r: Double = 1
+  for (i <- 1 to n)
+    r *= i
+  r  // возвращаем значение r
+}
+fact(100) // 9.33262154439441E157
+\end{lstlisting}
+\end{minipage}
+\hspace*{2mm}
+\begin{minipage}[t]{0.45\textwidth}
+	\begin{lstlisting}[
+	style = ironpython,
+	emph = {fact},
+	numbers = none
+	]
+# --- Python
+def fact(n: int) -> int:
+    r = 1
+    for i in range(1,n+1):
+        r *= i
+    return r
+fact(100)
+	\end{lstlisting}
+\end{minipage}
+
+В данном случае нет необходимости явно использовать ключевое слово \texttt{return}. В Scala допускается использовать \texttt{return} для \emph{немедленного} выхода из функции, как в Java или C++, но такой способ редко используется.
+
+\remark{%
+Даже при том, что нет ничего особенного в том, чтобы использовать \texttt{return} в именованных функциях, лучше все-таки стараться привыкать жить без \texttt{return}. В анонимных функциях \texttt{return} не возвращает значение вызывающей программе, а выполняет выход во вмещающую, именованную функцию. Инструкцию \texttt{return} можно интерпретировать как своеобразную инструкцию \texttt{break} для функций и использовать ее только для преждевременного прерывания выполнения функций
+}
+
+В \emph{рекурсивных} функциях \emph{тип} возвращаемого значения должен указываться \emph{обязательно}. Например
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+def fact(n: Int): Int = {
+  // не нужен return!!!
+  if (n <= 0) 1 else n*fact(n - 1)
+}
+\end{lstlisting}
+
+Без определения типа возвращаемого значения компилятор Scala не сможет убедиться, что выражение \texttt{n*fact(n - 1)} имеет тип \texttt{Int}.
+
+На Python эта задача решалась бы так
+\begin{lstlisting}[
+style = ironpython,
+emph = {fact},
+numbers = none
+]
+def fact(n: int) -> int:
+    # оператор return нужен обязательно!
+    return 1 if (n <= 0) else n*fact(n - 1)
+\end{lstlisting}
+
+К слову, в Scala нет ветки elif как в Python, поэтому приходится использовать вложенные условия. Например для функции sign
+\begin{align*}
+	\mathrm{sign}(x) = 
+	\begin{cases}
+		1, &x > 0,\\
+		0, &x = 0,\\
+		-1, &x < 0
+	\end{cases}
+\end{align*}
+
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+def sign(x: Float) = {
+  if (x > 0) 1 else {
+    if (x == 0) 0 else -1
+  }
+}
+\end{lstlisting}
+
+\subsection{Аргументы по умолчанию и именованные аргументы}
+
+Существует возможность определять аргументы по умолчанию для функций, чтобы при вызове можно было не указывать их значения явно. Например:
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+// в начале указвыаются позиционные аргументы, потом именованные
+def decorate(str: String, left: String = "[", right: String = "]") = {
+  // return не нужен!!!
+  left + str + right
+}
+\end{lstlisting}
+
+На Python
+\begin{lstlisting}[
+style = ironpython,
+numbers = none
+]
+def decorate(strr: str, left: str = '[', right: str = ']') -> str:
+    return '{}{}{}'.format(left, strr, right)
+    # или так
+    # return f'{left}{strr}{right}'
+\end{lstlisting}
+
+Если при вызове число аргументов оказывается меньше числа параметров, применяются аргументы по умолчанию, начиная с конца. При передаче аргументов можно также указывать имена параметров. Именованные аргументы необязательно должны следовать в том же порядке, что и параметры. Например
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+decorate(left="<<<", str="Hello", right=">>>")  // "<<<Hello>>>"
+\end{lstlisting}
+
+\subsection{Переменное количество аргументов}
+
+Иногда бывает удобно реализовать функцию, способную принимать переменное чило аргументов. Следующий пример демонстрирует синтаксис объявления таких функций
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+// --- Scala
+def sum(args: Int*) = {
+  var result = 0
+  for (arg <- args)
+    result += arg
+  result
+}
+val s = sum(1, 4, 9, 16, 25)
+\end{lstlisting}
+
+Функция принимает единственный параметр типа \texttt{Seq}. Такой функции нельзя передавать уже имеющуюся последовательность значений. Следующий вызов оформлен неверно \lstinline{val s = sum(1 to 5) // Ошибка!!!}. Если вызывать функцию с одним аргументом, это должно быть единственное целое число, а не диапазон целых чисел. Чтобы исправить ошибку, необходимо сообщить компилятору, что параметр должен интерпретироваться как последовательность аргументов. Добавьте в конец <<\texttt{: \_*}>>
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+val s = sum(1 to 5: _*) // интепретировать 1 to 5 как последовательность аргументов
+\end{lstlisting}
+
+\begin{lstlisting}[
+style = ironpython,
+emph = {summ},
+numbers = none
+]
+# --- Python
+def summ(*args) -> int:
+    result = 0
+    for arg in args:
+        result += arg
+    return result
+# позиционные аргументы собираются в кортеж
+s = summ(1, 4, 9, 16, 25)
+lst = [1, 4, 9, 16, 25]
+s = summ(*lst)  # нужно распаковать список перед передачей
+# можно воспользоваться генераторными выражениями
+s = summ(*list(i**2 for i in range(1,5+1)))
+\end{lstlisting}
+
+Без этого синтаксиса не обойтись при определении рекурсивной функции с переменным числом аргументов
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+def recursiveSum(args: Int*): Int = {
+  if (args.head == 0) 0
+  else args.head + recursiveSum(args.tail: _*) // функция recursiveSum на каждой итерации вызывается с усеченной последовательностью args
+}
+\end{lstlisting}
+
+Здесь \texttt{head} -- начальный элемент последовательности, а \texttt{tail} -- \emph{все остальные} элементы последовательности. Это также объект \texttt{Seq}, поэтому необходимо использовать <<\verb|: _*|>> для преобразования его в последовательность аргументов.
+
+На Python
+\begin{lstlisting}[
+style = ironpython,
+numbers = none
+]
+# функция будет вызваться рекурсивно до тех пор, пока не выполнится
+# условие останова, то есть пока длина последовательности не станет равной 0
+def recursiveSum(*args) -> int: 
+    print(f'type of args: {args}({type(args)})')
+    # переданная последовательность чисел собирается в кортеж args
+    if len(args) == 0:  # условие останова
+        return 0
+    else:
+        # кортеж args перед передачей функции следует распаковать
+        return args[0] + recursiveSum(*args[1:])
+# -----------------------------------------
+# type of args: (1, 5, 10)(<class 'tuple'>)
+# type of args: (5, 10)(<class 'tuple'>)
+# type of args: (10,)(<class 'tuple'>)
+# type of args: ()(<class 'tuple'>)
+\end{lstlisting}
+
+\section{Процедуры}
+
+Раньше в Scala была специальная форма записи для объявления функций, не возвращающих значений. Если тело функции заключено в фигурные скобки \emph{без предшествующего символа} \texttt{=}, тогда возвращаемое значение будет иметь тип \texttt{Unit}. Такие функции называются \emph{процедурами}. Процедура не возвращает значение и вызывается исключительно ради побочного эффекта.
+
+\remark{%
+Сейчас (версия 2.13.3) этот процедурный синтаксис отменен и для объявления процедуры требуется \emph{явно} указывать тип возвращаемого объекта (\texttt{Unit})
+}
+
+Например, следующая процедура выводит строку в рамке
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+def box(s: String): Unit = { // явно указывается Unit = {...
+  val border = f"${"-"*s.length}--\n"
+  println(f"${border}|${s}|\n${border}")
+}
+box("test")
+//-------
+//|Scala|
+//-------
+\end{lstlisting}
+
+На Python
+\begin{lstlisting}[
+style = ironpython,
+emph = {box},
+numbers = none
+]
+from typing import NoReturn
+
+def box(s: str) -> NoReturn:
+    border = f'{"-"*len(s)}--\n'
+    print(f'{border}|{s}|\n{border}')
+#--------
+#|Python|
+#--------
+\end{lstlisting}
+
+\section{Ленивые значения}
+
+Когда значение \texttt{val} объявляется как \texttt{lazy} (ленивое), его инициализация откладывается до первого обращения к нему. Например
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+// читает файл в строку
+lazy val words = scala.io.Source.fromFile("./nonexistent_file_name.txt").mkString
+\end{lstlisting}
+
+Если программа никогда не обратиться к значению \texttt{words}, файл никогда не будет открыт. Ленивые значения удобно использовать, чтобы отложить дорогостоящие операции инициализации. В Python механизм отложенных вычислений можно реализовать с помощью карированных функций, генераторных функций, сопрограмм и т.д.
+
+Ленивые значения можно считать чем-то средним между \texttt{val} и \texttt{def}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+// вычисляется немедленно, в момент определения words
+val words = scala.io.Source.fromFile("./file_name.txt").mkString 
+// вычисляется при первом обращении к words
+lazy val words = scala.io.Source.fromFile(".file_name.txt").mkString
+// вычисляется всякий раз, когда происходит обращение к words
+def words = scala.io.Source.fromFile(".file_name.txt").mkString
+\end{lstlisting}
+
+Прочитать файл построчно можно так
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+import scala.io.Source.fromFile
+
+lazy val fo = fromFile("./test_args.py").mkString // или просто fromFile("...")
+for (line <- fo)
+  print(line)
+\end{lstlisting}
+
+На Python
+\begin{lstlisting}[
+style = ironpython,
+numbers = none
+]
+with open('test_args.py', 'r') as tf:
+    for line in tf:
+        print(line.rstrip())
+\end{lstlisting}
+
+\remark{%
+Откладывание вычислений не дается бесплатно. Всякий раз, когда выполняется обращение к ленивому значению, вызывается метод, который проверяет, потокобезопасным способом, было ли инициализированно значение
+}
+
+\section{Исключения}
+
+В языке Scala, в отличие от Java отсутствуют <<контролируемые>> исключения -- вам никогда не придется объявлять, что некоторый метод или функция может возбуждать исключение. Разработчики Scala решили отказаться от контролируемых исключений, признавая, что полная проверка на этапе компиляции не всегда оправдана.
+
+Выражение \texttt{throw} имеет специальный тип \texttt{Nothing}, что может пригодиться в выражениях \texttt{if/else}. Если одна из ветвей имеет тип \texttt{Nothing}, типом всего выражения \texttt{if/else} становится тип другой ветки. Например
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+import scala.math._
+if (x >= 0) { sqrt(x) } else throw new IllegalArgumentException("x should not be negative")
+\end{lstlisting}
+
+Первая ветвь имеет тип \texttt{Double}, вторая -- тип \texttt{Nothing}. Таким образом, все выражение \texttt{if/else} имеет тип \texttt{Double}.
+
+В Python это можно решить так
+\begin{lstlisting}[
+style = ironpython,
+emph = {f},
+numbers = none	
+]
+import math
+def f(x):
+    if x >= 0:
+        return math.sqrt(x)
+    else:
+        assert x >= 0, 'x should not be negative'
+\end{lstlisting}
+
+Конструкции \texttt{try/catch} и \texttt{try/finally} имеют разные цели. Инструкция \texttt{try/catch} обрабатывает исключения, а инструкция \texttt{try/finally} предпринимает некоторые действия (обычно -- освобождение ресурсов), если исключение не будет обработанно. Их можно объединить в одну инструкцию \texttt{try/catch/finally}
+\begin{lstlisting}[
+style = scala,
+numbers = none
+]
+try { ... } catch { ... } finally { ... }
+\end{lstlisting}
+
+\remark{%
+Если возникает необходимость использовать в качестве имени переменной зарезервированное слово, то его необходимо обернуть обратными кавычками, например, \texttt{var `do`: Int = 10}
+}
 
 
 
