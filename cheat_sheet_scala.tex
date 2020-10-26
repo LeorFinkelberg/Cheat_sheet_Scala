@@ -38,6 +38,36 @@ source "$HOME/.sdkman/bin/sdkman-init.sh"
 sdk version
 \end{lstlisting}
 
+\section{Компиляция программ на Scala}
+
+Пусть есть программа такая программа
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+object Hello extends App {
+	println("Hello, world")
+}
+\end{lstlisting}
+
+Скомпилировать эту программу можно с помощью утилиты командной строки \texttt{scalac}
+\begin{lstlisting}[
+style = bash,
+numbers = none	
+]
+scalac Hello.scala
+\end{lstlisting}
+
+Затем можно запустить программу с помощью утилиты командной строки \texttt{scala}
+\begin{lstlisting}[
+style = bash,
+numbers = none	
+]
+scala Hello
+\end{lstlisting}
+
+После этого в рабочей директории появятся файлы с расширениями \texttt{Hello.class}, \texttt{'Hello\$.class'}, \texttt{'Hello\$delayedInit\$body.class'}
+
 \section{Краткая справка по особенностям языка}
 
 \subsection{Часто используемые типы}
