@@ -98,7 +98,7 @@ numbers = none
 scalac Hello.scala
 \end{lstlisting}
 
-Затем можно запустить программу с помощью утилиты командной строки \texttt{scala}
+Затем можно запустить программу с помощью утилиты командной строки \texttt{scala} $ {}^{\circ} $
 \begin{lstlisting}[
 style = bash,
 numbers = none	
@@ -108,10 +108,188 @@ scala Hello
 
 После этого в рабочей директории появятся файлы с расширениями \texttt{Hello.class}, \texttt{'Hello\$.class'}, \texttt{'Hello\$delayedInit\$body.class'}
 
+\section{Работа с языком Scala в JupyterLab}
+
+Для того, чтобы JupyterLab поддерживал код на Scala требуется установить ядро \texttt{spylon-kernel}
+\begin{lstlisting}[
+style = bash,
+numbers = none	
+]
+# Step 1: Install spylon kernel
+pip install spylon-kernel
+
+# Step 2: create a kernel spec
+python -m spylon_kernel install
+
+# Step 3: start jupyter notebook 
+jupyter notebook
+\end{lstlisting}
+
+Посмотреть установленные ядра можно так
+\begin{lstlisting}[
+style = bash,
+numbers = none	
+]
+jupyter kernelspec list
+\end{lstlisting}
+
+В некотрых случаях удобнее работать с almond \url{https://almond.sh/docs/try-docker} -- это docker-образ Scala-ядра для Jupyter
+\begin{lstlisting}[
+style = bash,
+numbers = none	
+]
+docker run -it --rm -p 8888:8888 almondsh/almond:latest
+\end{lstlisting}
+
+Можно указать конкретную версию almond или Scala
+\begin{lstlisting}[
+style = bash,
+numbers = none	
+]
+docker run -it --rm -p 8888:8888 almondsh/almond:0.10.9
+docker run -it --rm -p 8888:8888 almondsh/almond:0.10.9-scala-2.12.8
+\end{lstlisting}
+
+
+
 \section{Приемы использования библиотеки Breeze}
 
-Быстрое введение в библиотеку \texttt{Breeze} можно найти здесь \url{https://github.com/scalanlp/breeze/wiki/Quickstart}.
+Быстрое введение в библиотеку \texttt{Breeze} можно найти здесь \url{https://github.com/scalanlp/breeze/wiki/Quickstart}, а шпаргалку по работе с инструментами линейной алгебры по адресу \url{https://github.com/scalanlp/breeze/wiki/Linear-Algebra-Cheat-Sheet}.
 
+Чтобы создать полносвязанный вектор или матрицу можно воспользоваться следующими приемами
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+import breeze.linalg._
+
+DenseVector.ones[Double](5) 
+// np.ones(5) <-- numpy
+
+DenseVector.fill(3){5}  // или просто DenseVector.fill(3)(5)
+// np.ones(3)*5 <-- numpy
+
+DenseVector.fill(3){scala.math.sin(10)}
+// np.ones(3)*np.sin(10)
+
+DenseMatrix.ones[Double](3,2)
+// np.ones((3,2)) <-- numpy
+
+DenseMatrix((1.0, 2.0), (3.0, 4.0))
+// np.array([[1.0, 2.0], [3.0, 4.0]]) <-- numpy
+\end{lstlisting}
+
+Для диапазона
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+linspace(1,5,10)
+// np.linspace(1,5,10 <-- numpy)
+\end{lstlisting}
+
+Транспонирование векторов и матриц
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+DenseVector(1.to(5): _*).t
+// np.array(range(1,6)).reshape(-1, 1)
+
+DenseMatrix((10, 20, 30), (40, 50, 60)).t
+// np.array([[10, 20, 30], [40, 50, 60]]).T
+\end{lstlisting}
+
+Можно использовать приемы генерации значений таблицы на лету
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+DenseMatrix.tabulate(3, 2){ case (i, j) => i + j}
+\end{lstlisting}
+
+На ванильном Python генерацию на лету можно было бы реализовать так
+\begin{lstlisting}[
+style = IronPython,
+emph = {tabulate},
+numbers = none	
+]
+def tabulate(n: int, m: int) -> np.array:
+    arr = []
+    for i in range(n):
+        row = []
+        for j in range(m):
+            row.append(i + j)
+        arr.append(row)
+    return np.array(arr)
+\end{lstlisting}
+
+Создать матрицу на базе массива можно так
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+val mtx = new DenseMatrix(2, 3, Array[Int](10, 20, 30, 40, 50, 60)) // обязательно new!
+\end{lstlisting}
+
+Для создания векторов и матриц, заполненных равномерно распределенными псевдослучайными числами используется метод \texttt{rand}
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+DenseVector.rand(3)
+// np.random.rand(3)
+// или
+DenseMatrix.rand(3, 2)
+// np.random.rand(3, 2)
+\end{lstlisting}
+
+Чтение и запись векторов и матриц
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+val mtx = DenseMatrix.rand(3, 2)
+mtx(1, 1) // 1-ая строка и 1-ый столбец
+
+val v = DenseVector.rand(10)
+v.slice(1,5) // или a(1 to 4) или a(1 until 5)
+// v[1:5] <-- numpy; правая граница не включается!
+
+v(5 to 0 by -1)
+// v[5::-1]
+
+v(1 to -1) // v[1:]
+
+v(-1) // v[-1] последний элемент
+
+v(::, 2) // v[:, 2]
+\end{lstlisting}
+
+Примеры других манипуляций
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+mtx.reshape(3, 2) // как и в numpy
+
+// разворачивание матрицы в вектор
+mtx.toDenseVector // mtx.flatten()
+
+// копирование нижнего треугольника данных
+lowerTriangular(mtx) // np.tril(mtx)
+
+// копирование верхнего треугольника данных
+upperTriangular(mtx) // np.triu(mtx)
+
+// верхнеуровневое копирование
+mtx.copy // np.copy(mtx)
+
+// выбрать диагональные элементы матрицы
+diag(mtx) // np.diagonal(mtx)
+
+
+\end{lstlisting}
 
 
 
