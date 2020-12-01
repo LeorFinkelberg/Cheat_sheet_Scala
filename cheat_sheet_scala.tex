@@ -150,6 +150,37 @@ docker run -it --rm -p 8888:8888 almondsh/almond:0.10.9
 docker run -it --rm -p 8888:8888 almondsh/almond:0.10.9-scala-2.12.8
 \end{lstlisting}
 
+Затем нужно будет открыть в браузере вкладку с адресом, который будет указан в логах. Для примера начнем работу с библиотекой \texttt{plotly} \url{https://github.com/alexarchambault/plotly-scala}
+\begin{lstlisting}[
+title = {\sffamily в сеансе Jupyter},
+style = scala,
+numbers = none	
+]
+import $ivy.`org.plotly-scala::plotly-almond:0.8.0` // <-- NB: динамическое подключение библиотеки
+import plotly._
+import plotly.element._
+import plotly.layout._
+import plotly.Almond._
+
+val (x, y) = Seq(
+  "Banana" -> 10,
+  "Apple" -> 8,
+  "Grapefruit" -> 5
+).unzip
+
+Bar(x, y).plot()
+\end{lstlisting}
+
+Для поддержки Spark в almond необходимо добавить следующие строки (ВАЖНО: ядро и кластер Spark должны использовать одну и ту же версию Scala)
+\begin{lstlisting}[
+style = scala,
+title = {\sffamily в сеансе Jupyter. Для поддержки Spark},
+numbers = none	
+]
+import $ivy.`org.apache.spark::spark-sql:2.4.0` // Or use any other 2.x version here
+import $ivy.`sh.almond::almond-spark:@VERSION@` // Not required since almond 0.7.0 (will be automatically added when importing spark)
+\end{lstlisting}
+
 
 
 \section{Приемы использования библиотеки Breeze}
