@@ -78,6 +78,29 @@ scala> val v = DenseVector(1.0, 2.0, 3.0)
 
 К слову, есть полезная шпаргалка по \texttt{breeze} \url{https://github.com/scalanlp/breeze/wiki/Linear-Algebra-Cheat-Sheet}
 
+\section{Базовый sbt-файл}
+
+Зависимости проекта описываются в файле \textsf{build.sbt}
+
+\begin{lstlisting}[
+title = {\sffamily build.sbt},
+style = scala,
+numbers = none	
+]
+scalaVersion := "2.13.3"
+
+libraryDependencies ++= Seq(
+  "org.scalanlp" %% "breeze" % "1.1",
+  "org.scalanlp" %% "breeze-natives" % "1.1",
+  "org.scalanlp" %% "breeze-viz" % "1.1",
+  "org.plotly-scala" %% "plotly-render" % "0.8.0",
+  //"org.apache.spark" %% "spark-core" % "2.2.3" % "provided",
+  //"org.apache.spark" %% "spark-sql" % "2.2.3" % "provided",
+  //"org.vegas-viz" %% "vegas" % "0.3.11"
+)
+\end{lstlisting}
+
+
 \section{Компиляция программ на Scala}
 
 Пусть есть программа такая программа
@@ -171,7 +194,15 @@ val (x, y) = Seq(
 Bar(x, y).plot()
 \end{lstlisting}
 
-Для поддержки Spark в almond необходимо добавить следующие строки (ВАЖНО: ядро и кластер Spark должны использовать одну и ту же версию Scala)
+Узнать домашнюю директорию Spark можно так
+\begin{lstlisting}[
+style = bash,
+numbers = none	
+]
+echo 'sc.getConf.get("spark.home")' | spark-shell
+\end{lstlisting}
+
+Для поддержки Spark в almond необходимо добавить следующие строки (ВАЖНО: ядро и кластер Spark должны использовать одну и ту же версию Scala) \url{https://github.com/almond-sh/almond/blob/master/docs/pages/usage-spark.md}
 \begin{lstlisting}[
 style = scala,
 title = {\sffamily в сеансе Jupyter. Для поддержки Spark},
@@ -181,6 +212,23 @@ import $ivy.`org.apache.spark::spark-sql:2.4.0` // Or use any other 2.x version 
 import $ivy.`sh.almond::almond-spark:@VERSION@` // Not required since almond 0.7.0 (will be automatically added when importing spark)
 \end{lstlisting}
 
+В самом простом случае можно воспользоваться web-интерфейсом \texttt{binder} \url{https://mybinder.org/}, доступного на странице проекта almond (по состоянию на 02.12.20 Spark совместим только с версией Scala 2.11).
+
+Подключить \texttt{breeze} в сеансе JupyterLab на базе binder можно такой конструкцией
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+import $ivy.`org.scalanlp::breeze:1.0`
+
+import breeze.linalg.{DenseMatrix, DenseVector}
+import breeze.stats.regression.{leastSquares, lasso}
+...
+\end{lstlisting}
+
+\section{Работа со Scala через Ammonite}
+
+\texttt{Ammonite} \url{https://ammonite.io/} на высоком уровне абстракции (очень грубо) представляет собой командную REPL-оболочку для Scala (на самом деле возможности гораздо шире).
 
 
 \section{Приемы использования библиотеки Breeze}
