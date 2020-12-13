@@ -187,17 +187,20 @@ object SimpleApp {
 
 В файл сборки \texttt{build.sbt} следует добавить следующие строки
 \begin{lstlisting}[
-title = {\sffamily build.sbt},
+title = {\sffamily Пример файла build.sbt},
 style = bash,
 numbers = none	
 ]
-name := "Simple Project"
+name := "SparkML"
 
 version := "1.0"
 
 scalaVersion := "2.12.12"
 
-libraryDependencies += "org.apache.spark" %% "spark-sql" % "3.0.1""
+libraryDependencies ++= Seq(
+  "org.apache.spark" %% "spark-sql" % "3.0.1" % "provided",
+  "org.apache.spark" %% "spark-mllib_2.12" % "3.0.1" % "provided"
+)
 \end{lstlisting}
 
 Для того чтобы \texttt{sbt} работал корректно, требуется разместить \texttt{SimpleApp.scala} и \texttt{build.sbt} следующим образом:
