@@ -100,6 +100,36 @@ libraryDependencies ++= Seq(
 )
 \end{lstlisting}
 
+При работе со Scala-проектом с помощью \texttt{sbt} или IntelliJ IDEA версия языка определяется параметром \texttt{scalaVersion} в файле сборки \texttt{build.sbt}, например
+\begin{lstlisting}[
+style = bash,
+numbers = none	
+]
+scalaVersion := "2.12.12"
+...
+\end{lstlisting}
+
+Остается только при запуске сессии в REPL набрать \texttt{sbt console} (а не \texttt{scala}), чтобы загрузить указанную версию Scala и все зависимости проекта.
+
+То есть для того чтобы использовать разные версии Scala в разных проектах нужно указать нужную версию Scala в файле сборки \texttt{build.sbt}.
+
+К слову, узнать версию Scala в сессии можно так
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+scala.util.Properties.versionNumberString  // String = 2.12.12
+scala.util.Properties.versionMsg  // String = Scala library version 2.12.12 -- Copyright 2002-2020, LAMP/EPFL and Lightbend, Inc.
+\end{lstlisting}
+
+На MacOS для того чтобы выяснить доступные версии Scala можно воспользоваться менеджером пакета \texttt{brew}
+\begin{lstlisting}[
+style = bash,
+numbers = none	
+]
+brew search scala
+\end{lstlisting}
+
 
 \section{Компиляция программ на Scala}
 
@@ -130,6 +160,83 @@ scala Hello
 \end{lstlisting}
 
 После этого в рабочей директории появятся файлы с расширениями \texttt{Hello.class}, \texttt{'Hello\$.class'}, \texttt{'Hello\$delayedInit\$body.class'}
+
+\section{Сборка jar-файлов в Spark-проектах}
+
+Создадим простое Spark-приложение 
+\begin{lstlisting}[
+title = {\sffamily SimpleApp.scala},
+style = scala,
+numbers = none	
+]
+import org.apache.spark.sql.SparkSession
+
+object SimpleApp {
+  def main(args: Array[String]) = {
+    val logFile = "./req.txt"
+    // создаем Spark-сессию
+    val spark = SparkSession.builder.appName("Simple Application").getOrCreate()
+    val logData = spark.read.textFile(logFile).cache()
+    val numsA = logData.filter(line => line.contains("a")).count()
+    val numsB = logData.filter(line => line.contains("b")).count()
+    println(s"--> Lines with a: $numsA, Lines with b: $numsB")
+    spark.stop()
+  }
+}
+\end{lstlisting}
+
+В файл сборки \texttt{build.sbt} следует добавить следующие строки
+\begin{lstlisting}[
+title = {\sffamily build.sbt},
+style = bash,
+numbers = none	
+]
+name := "Simple Project"
+
+version := "1.0"
+
+scalaVersion := "2.12.12"
+
+libraryDependencies += "org.apache.spark" %% "spark-sql" % "3.0.1""
+\end{lstlisting}
+
+Для того чтобы \texttt{sbt} работал корректно, требуется разместить \texttt{SimpleApp.scala} и \texttt{build.sbt} следующим образом:
+\begin{itemize}
+	\item файл \texttt{build.sbt} должен лежать в корне проекта,
+	
+	\item а scala-скрипт -- по пути \directory{src > main > scala > SimpleApp.scala}.
+\end{itemize}
+
+Теперь можно упаковать приложение
+\begin{lstlisting}[
+style = bash,
+numbers = none	
+]
+sbt package
+\end{lstlisting}
+
+Для запуска scala-приложения используется \texttt{spark-submit}
+\begin{lstlisting}[
+style = bash,
+numbers = none	
+]
+spark-submit \
+  --class "SimpleApp" \
+  --master local \
+  target/scala-2.12/simple-project_2.12-1.0.jar
+\end{lstlisting}
+
+Для запуска python-сценария следует набрать
+\begin{lstlisting}[
+style = bash,
+numbers = none	
+]
+spark-submit \
+  --master local \
+  SimpleApp.py
+\end{lstlisting}
+
+
 
 \section{Работа с языком Scala в JupyterLab}
 
