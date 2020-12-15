@@ -180,7 +180,7 @@ object SimpleApp {
     val numsA = logData.filter(line => line.contains("a")).count()
     val numsB = logData.filter(line => line.contains("b")).count()
     println(s"--> Lines with a: $numsA, Lines with b: $numsB")
-    spark.stop()
+    spark.stop() // <-- NB
   }
 }
 \end{lstlisting}
@@ -476,8 +476,92 @@ mtx.copy // np.copy(mtx)
 
 // выбрать диагональные элементы матрицы
 diag(mtx) // np.diagonal(mtx)
+\end{lstlisting}
+
+\section{Использование ключевых \texttt{private} и \texttt{protected}}
+
+Если поле объявлено как публичное (то есть без пометок \texttt{private} и пр.), то к этому полю можно получить доступ как из-под дочерних классов, так и из-под переменной, связанной с экземпляром класса
+
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+import scala.math.{Pi}
+
+class Test {
+  val a = 10 // общедоступное поле
+  val b = Pi // общедоступное поле
+  
+  def readValueA = a
+  def readValueB = b
+}
+
+val t = Test()
+t.a // val res0: Int = 10
+t.b // val res1: Double = 3.141592653589793
+t.readValueA // val res2: Int = 10
+t.readValueB // val res3: Double = 3.141592653589793
+\end{lstlisting}
+
+Если поле объявлено как \texttt{private}, то будут созданы \emph{приватные} методы доступа, а это значит, что получить доступ к такому полю через переменную, связанную с экземпляром класса или из-под дочернего класса (т.е. подкласса) не удастся.
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+import scala.math.{Pi}
 
 
+class Test { // родительский класс
+	private val a = 10
+	val b = Pi
+	
+	def readValueA = a
+	def readValueB = b
+}
+
+class DaughterTest extends Test { // дочерний класс
+	//val readValueAfromSubClass = a // (-) нельзя получить доступ к "a" (private a)
+	val readValueBfromSubClass = b
+}
+
+val d = new DaughterTest() // экземпляр-подкласс
+d.readValueBfromSubClass // val res2: Double = 3.141592653589793
+\end{lstlisting}
+
+\remark{%
+Если поле публичное (без \texttt{private} и пр.), то создаются публичные методы доступа. Если поле приватное, то, соответственно, создаются приватные методы доступа. Причем в случае приватного поля получить доступ к нему из-под экземпляра класса или из-под дочернего класса не удастся
+}
+
+Однако, если поле объявить как \texttt{protected}, то доступ к этому полю можно будет получить из-под дочерних классов, но по-прежнему нельзя получить из-под экземпляра класса.
+\begin{lstlisting}[
+style = scala,
+numbers = none	
+]
+import scala.math.{Pi}
+
+
+class Test { // родительский класс
+	protected val a = 10 // <-- NB
+	val b = Pi
+	
+	def readValueA = a
+	def readValueB = b
+}
+
+class DaughterTest extends Test { // дочерний класс
+	val readValueAfromSubClass = a // обращение к защищенному полю "a"
+	val readValueBfromSubClass = b
+}
+
+val t = new Test()
+//t.a // нельзя обратиться из-под экземпляра
+t.b
+//t.readValueA
+t.readValueB
+
+val d = new DaughterTest()
+d.readValueAfromSubClass // val res4: Int = 10
+d.readValueBfromSubClass // val res5: Double = 3.141592653589793
 \end{lstlisting}
 
 
