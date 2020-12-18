@@ -188,7 +188,7 @@ object SimpleApp {
 В файл сборки \texttt{build.sbt} следует добавить следующие строки
 \begin{lstlisting}[
 title = {\sffamily Пример файла build.sbt},
-style = bash,
+style = scala,
 numbers = none	
 ]
 name := "SparkML"
@@ -199,7 +199,7 @@ scalaVersion := "2.12.12"
 
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % "3.0.1" % "provided",
-  "org.apache.spark" %% "spark-mllib_2.12" % "3.0.1" % "provided"
+  "org.apache.spark" % "spark-mllib_2.12" % "3.0.1" % "provided"  // в строке используется один "%"!!!
 )
 \end{lstlisting}
 
